@@ -6,8 +6,7 @@ import postRoutes from "./routes/post.js";
 const app = express();
 const port = 3000;
 
-app.use(express.json());
-
+app.use(express.static("public/uploads"));
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/v1/blog", postRoutes);
