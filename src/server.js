@@ -1,5 +1,6 @@
 import express from "express";
 import mongoose from "mongoose";
+import cors from "cors";
 
 import postRoutes from "./routes/post.js";
 
@@ -8,6 +9,7 @@ const port = 3000;
 
 app.use(express.static("public/uploads"));
 app.use(express.urlencoded({ extended: true }));
+app.use(cors({ origin: "*" }));
 
 app.use("/api/v1/blog", postRoutes);
 
