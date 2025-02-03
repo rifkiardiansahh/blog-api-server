@@ -9,6 +9,7 @@ import {
 } from "../controllers/post.js";
 import { upload } from "../middlewares/upload.js";
 import { validateRequest } from "../middlewares/validateRequest.js";
+import { checkAuth } from "../middlewares/checkAuth.js";
 
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.get("/post/:id", getPostById);
 
 router.post(
   "/post",
+  checkAuth,
   upload.single("image"),
   [
     body("title").not().isEmpty().withMessage("Title is required"),
@@ -29,6 +31,7 @@ router.post(
 
 router.put(
   "/post/:id",
+  checkAuth,
   upload.single("image"),
   [
     body("title").not().isEmpty().withMessage("Title is required"),
@@ -38,6 +41,6 @@ router.put(
   updatePost
 );
 
-router.delete("/post/:id", deletePost);
+router.delete("/post/:id", checkAuth, deletePost);
 
 export default router;

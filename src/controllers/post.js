@@ -22,9 +22,10 @@ import { uploadRemover } from "../utils/uploadRemover.js";
 
 export const createPost = async (req, res) => {
   const { title, body } = req.body;
+  const { userId } = req.user;
   const image = req.file ? req.file.filename : null;
   try {
-    const post = new Post({ title, body, image });
+    const post = new Post({ title, body, image, author: userId });
     const savedPost = await post.save();
 
     return res.status(201).json({
@@ -39,7 +40,7 @@ export const createPost = async (req, res) => {
 
 export const getPosts = async (req, res) => {
   try {
-    const posts = await Post.find();
+    const posts = await Post.find().populate("author", "name");
 
     return res.status(200).json({
       message: "Posts Found",
@@ -55,7 +56,7 @@ export const getPostById = async (req, res) => {
   const postId = req.params.id;
 
   try {
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("author", "name");
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
@@ -73,14 +74,19 @@ export const getPostById = async (req, res) => {
 
 export const updatePost = async (req, res) => {
   const postId = req.params.id;
+  const { userId } = req.user;
   const { title, body } = req.body;
   const newImage = req.file ? req.file.filename : null;
 
   try {
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("author", "name");
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.author._id.toString() !== userId) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
     if (newImage) {
@@ -105,12 +111,17 @@ export const updatePost = async (req, res) => {
 
 export const deletePost = async (req, res) => {
   const postId = req.params.id;
+  const { userId } = req.user;
 
   try {
     const post = await Post.findByIdAndDelete(postId);
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.author._id.toString() !== userId) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
     uploadRemover(post.image);
