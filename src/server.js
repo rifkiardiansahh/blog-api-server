@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
+import "dotenv/config";
 
 import postRoutes from "./routes/post.js";
 import authRoutes from "./routes/auth.js";
@@ -22,7 +23,7 @@ app.all("*", (req, res) => {
 });
 
 mongoose
-  .connect(`mongodb://localhost:27017/blogDB`)
+  .connect(process.env.MONGO_URI)
   .then(() => {
     app.listen(port, () => {
       console.log(
