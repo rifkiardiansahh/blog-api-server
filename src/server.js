@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import "dotenv/config";
+import mongoSanitize from "express-mongo-sanitize";
 
 import postRoutes from "./routes/post.js";
 import authRoutes from "./routes/auth.js";
@@ -12,6 +13,8 @@ const port = 3000;
 app.use(express.static("public/uploads"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+app.use(mongoSanitize());
 
 app.use(cors({ origin: "*" }));
 
