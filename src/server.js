@@ -48,6 +48,7 @@
 //     });
 //   })
 //   .catch((err) => console.log("Connection error", err));
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -64,50 +65,46 @@ const app = express();
 app.use(express.static("public/uploads"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(mongoSanitize());
+app.use(cors({ origin: "*" }));
 
+// Rate limiting
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 100,
     standardHeaders: "draft-8",
     legacyHeaders: false,
-    message: {
-      message: "Too many requests, please try again later.",
-    },
+    message: { message: "Too many requests, please try again later." },
   })
 );
 
-app.use(mongoSanitize());
-app.use(cors({ origin: "*" }));
-
 // Routes
-// Tambahkan sebelum route lainnya
 app.get("/", (req, res) => {
+  // <-- Ini yang hilang!
   res.json({
-    message: "Welcome to Blog API",
+    status: "API is running",
     endpoints: {
       blog: "/api/v1/blog",
       auth: "/api/v1/auth",
     },
   });
 });
+
 app.use("/api/v1/blog", postRoutes);
 app.use("/api/v1/auth", authRoutes);
 
 app.all("*", (req, res) => {
-  res.status(404).send("Page not found");
+  res.status(404).json({ error: "Endpoint not found" });
 });
 
-// Export app untuk Vercel
-export default app;
-
-// Fungsi terpisah untuk koneksi database dan start server (untuk development)
+// Database connection and server start
 const startServer = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("Database successfully connected");
+    console.log("Database connected");
 
-    // Hanya start server jika tidak di Vercel
+    // Only start server if not on Vercel
     if (process.env.VERCEL !== "1") {
       const port = process.env.PORT || 3000;
       app.listen(port, () => {
@@ -115,8 +112,11 @@ const startServer = async () => {
       });
     }
   } catch (err) {
-    console.log("Connection error", err);
+    console.error("Database connection error:", err);
   }
 };
 
 startServer();
+
+// Export for Vercel
+export default app; // <-- Penting untuk Vercel!
