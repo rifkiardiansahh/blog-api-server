@@ -81,6 +81,16 @@ app.use(mongoSanitize());
 app.use(cors({ origin: "*" }));
 
 // Routes
+// Tambahkan sebelum route lainnya
+app.get("/", (req, res) => {
+  res.json({
+    message: "Welcome to Blog API",
+    endpoints: {
+      blog: "/api/v1/blog",
+      auth: "/api/v1/auth",
+    },
+  });
+});
 app.use("/api/v1/blog", postRoutes);
 app.use("/api/v1/auth", authRoutes);
 
